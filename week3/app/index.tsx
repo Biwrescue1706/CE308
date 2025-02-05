@@ -1,5 +1,7 @@
 import { Text, View } from "react-native";
-
+// import CartCounter from "./component/CartCounter";
+// import BatteryMonitor from "./component/BatteryMonitor";
+import Calculator from "./component/Calculator";
 export default function Index() {
   return (
     <View
@@ -9,7 +11,9 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+      {/* <CartCounter /> */}
+      {/* <BatteryMonitor /> */}
+      <Calculator />
     </View>
   );
 }
