@@ -1,4 +1,4 @@
-import { TouchableOpacity, Text } from "react-native";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
 
 type ButtonProps = {
   title: string;
@@ -9,23 +9,39 @@ type ButtonProps = {
 
 export default function CustomButton({ title, size, color, onPress }: ButtonProps) {
   const sizeStyles = {
-    small: "py-1 px-3 text-sm",
-    medium: "py-2 px-4 text-base",
-    large: "py-3 px-6 text-lg",
+    small: { paddingVertical: 6, paddingHorizontal: 12, fontSize: 14 , minWidth: 80},
+    medium: { paddingVertical: 8, paddingHorizontal: 16, fontSize: 16 , minWidth: 80 },
+    large: { paddingVertical: 10, paddingHorizontal: 20, fontSize: 18 , minWidth: 80 }
   };
 
   const colorStyles = {
-    primary: "bg-blue-500 text-white",
-    secondary: "bg-gray-500 text-white",
-    danger: "bg-red-500 text-white",
+    primary: { backgroundColor: "#3B82F6" }, // สีฟ้า
+    secondary: { backgroundColor: "#6B7280" }, // สีเทา
+    danger: { backgroundColor: "#EF4444" } // สีแดง
   };
 
   return (
     <TouchableOpacity
-      className={`rounded-md ${sizeStyles[size]} ${colorStyles[color]} active:opacity-70`}
+      style={[styles.button, sizeStyles[size], colorStyles[color]]}
       onPress={onPress}
+      activeOpacity={0.7}
     >
-      <Text className="text-center">{title}</Text>
+      <Text style={styles.text}>{title}</Text>
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    opacity: 0.9,
+    minWidth: 50,
+  },
+  text: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
+  }
+});
