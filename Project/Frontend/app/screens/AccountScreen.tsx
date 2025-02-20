@@ -1,9 +1,9 @@
 import { View, Text } from "react-native";
 
-export default function AccountScreen() {
+export default function AccountScreen({ navigation }) {
   return (
     <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-lg font-bold">👤 บัญชีของฉัน</Text>
+      <Text className="text-lg font-bold">บัญชีของฉัน</Text>
     </View>
   );
 }

@@ -1,33 +1,33 @@
+
+import { View, Text } from "react-native";
+import { NavigationContainer } from "react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
-import HomeScreen from "../screens/HomeScreen";
+
+//screens
+import Home from "../screens/Home";
 import SearchScreen from "../screens/SearchScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import AccountScreen from "../screens/AccountScreen";
+
+const homename = 'Home';
+const Searchname = 'SearchScreen';
+const Historyname = 'HistoryScreen';
+const Accountname = 'AccountScreen';
 
 const Tab = createBottomTabNavigator();
 
 export default function Navbar() {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = "help"; // ให้ค่า default
-          if (route.name === "Home") iconName = "home";
-          else if (route.name === "Search") iconName = "search";
-          else if (route.name === "History") iconName = "book";
-          else if (route.name === "Account") iconName = "person";
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: "blue",
-        tabBarInactiveTintColor: "gray",
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Search" component={SearchScreen} />
-      <Tab.Screen name="History" component={HistoryScreen} />
-      <Tab.Screen name="Account" component={AccountScreen} />
-    </Tab.Navigator>
+    <NavigationContainer>
+      <Tab.Navigator>
+        
+      </Tab.Navigator>
+    </NavigationContainer>
+    // <Tab.Navigator>
+    //   <Tab.Screen name="Home" component={Home} />
+    //   <Tab.Screen name="SearchScreen" component={SearchScreen} />
+    //   <Tab.Screen name="HistoryScreen" component={HistoryScreen} />
+    //   <Tab.Screen name="AccountScreen" component={AccountScreen} />
+    // </Tab.Navigator>
   );
 }
