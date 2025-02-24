@@ -3,10 +3,10 @@ import { View, Text } from "react-native";
 
 export default function SearchScreen({ navigation }) {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text
         onPress={() => navigation.navigate('Home')}
-        className="text-lg font-bold">ค้นหาหนังสือ</Text>
+        style={{ fontSize : 26 , fontWeight : 'bold'}} >ค้นหาหนังสือ</Text>
     </View>
   );
 }

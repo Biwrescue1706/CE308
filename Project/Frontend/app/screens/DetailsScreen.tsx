@@ -4,9 +4,10 @@ import { View, Text } from 'react-native';
 
 const DetailsScreen = ({ navigation }) => {
   return (
-    <View>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text
-      onPress={()=>navigation.navigate('Home')}
+      onPress={() => navigation.navigate('Home')}
+      style={{ fontSize : 26 , fontWeight : 'bold'}}
       >Details Screen</Text>
     </View>
   );
