@@ -1,10 +1,14 @@
 import { View, Text } from "react-native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
-export default function LoginScreen({ navigation }) {
+type LoginScreenProps = {
+  navigation: StackNavigationProp<any>;
+};
+
+export default function LoginScreen({ navigation }: LoginScreenProps) {
     return (
       <View>
         <Text
-        onPress={()=>navigation.navigate('Login')}
         >Login Screen</Text>
       </View>
     );

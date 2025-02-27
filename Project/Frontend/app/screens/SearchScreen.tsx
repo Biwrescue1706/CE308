@@ -1,12 +1,15 @@
 import * as React from "react";
-import { View, Text } from "react-native";
+import { View, Text , Button} from "react-native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
-export default function SearchScreen({ navigation }) {
+type SearchScreenProps = {
+  navigation: StackNavigationProp<any>;
+};
+
+export default function SearchScreen({ navigation } : SearchScreenProps) {
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text
-        onPress={() => navigation.navigate('Home')}
-        style={{ fontSize : 26 , fontWeight : 'bold'}} >ค้นหาหนังสือ</Text>
+      <Text style={{ fontSize : 26 , fontWeight : 'bold'}} >ค้นหาหนังสือ</Text>
     </View>
   );
 }

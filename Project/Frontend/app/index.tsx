@@ -1,12 +1,10 @@
-import { Link } from "expo-router";
-import { View, Text, Button ,} from "react-native";
-import Navbar from "./screens/Navbar";
-import Home from "./screens/Home";
+import { Stack } from "expo-router";
+import Navbar from "./components/Navbar"; // ✅ Import Navbar ที่แก้ไขแล้ว
 
 export default function Index() {
   return (
-    <View>
-      <Navbar />
-    </View>
+    <>
+      <Navbar /> {/* ✅ เรียก Navbar มาตรงๆ ไม่ต้องใช้ Stack */}
+    </>
   );
 }
