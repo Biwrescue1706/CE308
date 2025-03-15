@@ -9,49 +9,45 @@ const API_URL = Constants.expoConfig?.extra?.API_URL;
 
 export default function Index() {
     const router = useRouter();
-    const [books, setBooks] = useState([]);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [newBook, setNewBook] = useState({ title: '', author: '' });
+    const [books, setBooks] = useState<any[]>([]);
+    const [isModalVisible, setModalVisible] = useState(false);
+    const [selectedBook, setSelectedBook] = useState<any>(null);
 
-
+    // ดึงข้อมูลหนังสือใหม่ทุกครั้งที่เข้าเพจ
     useFocusEffect(
         useCallback(() => {
-
             axios
                 .get(`${API_URL}/books`)
                 .then((response) => setBooks(response.data))
-                .catch((error) => console.error(error));
+                .catch((error) => console.error("Error fetching books:", error));
         }, [])
     );
-
+    
+    // ฟังก์ชันสำหรับลบหนังสือ
     const handleDelete = (id: string) => {
         axios
             .delete(`${API_URL}/books/${id}`)
             .then(() => {
-                setBooks(books.filter((book) => book.id !== id));
+                setBooks((prevBooks) => prevBooks.filter(book => book.id !== id));
             })
-            .catch((error) => {
-                console.error(error);
-            });
+            .catch((error) => console.error("Error deleting book:", error));
     };
 
-
-
+    // เปิด Modal สำหรับแก้ไข
     const handleEdit = (book: any) => {
         setSelectedBook(book);
         setModalVisible(true);
-    }
+    };
 
-
-
+    // ปิด Modal
     const closeModal = () => {
         setModalVisible(false);
         setSelectedBook(null);
-    }
+    };
 
+    // บันทึกการแก้ไขหนังสือ
     const handleUpdate = () => {
         if (selectedBook) {
-
             const UpdatedBook = {
                 title: selectedBook.title,
                 author: selectedBook.author,
@@ -59,18 +55,18 @@ export default function Index() {
                 price: selectedBook.price,
             };
 
-
             axios.put(`${API_URL}/books/${selectedBook.id}`, UpdatedBook)
                 .then(() => {
                     closeModal();
-                    setBooks((prevBooks) => prevBooks.map((book) => book.id === selectedBook.id ? UpdatedBook : book));
+                    setBooks((prevBooks) =>
+                        prevBooks.map(book =>
+                            book.id === selectedBook.id ? { ...UpdatedBook, id: selectedBook.id } : book
+                        )
+                    );
                 })
-                .catch((error) => {
-                    console.error("Error updating book:", error.response?.data || error.message);
-                });
+                .catch((error) => console.error("Error updating book:", error));
         }
     };
-
 
     return (
         <View style={styles.container}>
@@ -78,59 +74,48 @@ export default function Index() {
                 data={books}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={{ marginBottom: 10, padding: 10, borderWidth: 1 }}>
-                        <Text>Title: {item.title}</Text>
-                        <Text>Author: {item.author}</Text>
-                        <Text>Description : {item.description}</Text>
-                        <Text>Price: {item.price}</Text>
-                        <TouchableOpacity
-                            style={styles.editButton}
-                            onPress={() => handleEdit(item.id)}
-                        >
-                            <Text style={styles.buttonText}>Edit</Text>
+                    <View style={styles.bookContainer}>
+                        <Text>ชื่อเรื่อง : {item.title}</Text>
+                        <Text>ผู้แต่ง : {item.author}</Text>
+                        <Text>คำอธิบาย : {item.description}</Text>
+                        <Text>ราคา : {item.price}</Text>
+                        <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(item)}>
+                            <Text style={styles.buttonText}>แก้ไข</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.deleteButton}
-                            onPress={() => handleDelete(item)}
-                        >
-                            <Text style={styles.deleteText}>Delete</Text>
+                        <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id)}>
+                            <Text style={styles.deleteText}>ลบ</Text>
                         </TouchableOpacity>
                     </View>
                 )}
             />
-            <Button title="Go to Profile" onPress={() => router.push("/profile")} />
-            <Modal
-                visible={modalVisible}
-                onRequestClose={closeModal}
-                animationType="slide"
-                transparent={true}
-            >
-                <View style={styles.modalContainer}>
+            <Button title="Go to Profile" onPress={() => router.push('/(screens)/profile')} />
+            <Modal visible={isModalVisible} onRequestClose={closeModal} animationType="slide" transparent={true}>
+                <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text>Edit Book</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Title"
                             value={selectedBook?.title}
-                            onChangeText={(text) => setSelectedBook((prev) => { ...prev, title: text })}
+                            onChangeText={(text) => setSelectedBook((prev: any) => ({ ...prev, title: text }))}
                         />
                         <TextInput
                             style={styles.input}
                             placeholder="Author"
                             value={selectedBook?.author}
-                            onChangeText={(text) => setSelectedBook((prev) => { ...prev, author: text })}
+                            onChangeText={(text) => setSelectedBook((prev: any) => ({ ...prev, author: text }))}
                         />
                         <TextInput
                             style={styles.input}
                             placeholder="Description"
                             value={selectedBook?.description}
-                            onChangeText={(text) => setSelectedBook((prev) => { ...prev, description: text })}
+                            onChangeText={(text) => setSelectedBook((prev: any) => ({ ...prev, description: text }))}
                         />
                         <TextInput
                             style={styles.input}
                             placeholder="Price"
                             value={selectedBook?.price?.toString()}
-                            onChangeText={(text) => setSelectedBook((prev) => { ...prev, price: parseFloat(text) })}
+                            onChangeText={(text) => setSelectedBook((prev: any) => ({ ...prev, price: parseFloat(text) }))}
                         />
                         <Button title="Save Changes" onPress={handleUpdate} />
                         <Button title="Cancel" onPress={closeModal} />
@@ -143,24 +128,21 @@ export default function Index() {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flex: 3,
         backgroundColor: "#fff",
         alignItems: "center",
         justifyContent: "center",
     },
-    text: {
-        color: '#fff'
+    bookContainer: {
+        marginBottom: 10,
+        padding: 10,
+        borderWidth: 1,
+        borderRadius: 5,
+        width: "90%",
     },
     buttonText: {
         color: "#fff",
     },
-    editButton: {
-        backgroundColor: "#0de136",
-        padding: 10,
-        borderRadius: 5,
-        marginTop: 10,
-    },
-
     deleteButton: {
         backgroundColor: "#ff4d4d",
         padding: 10,
@@ -170,5 +152,31 @@ const styles = StyleSheet.create({
     deleteText: {
         color: "#fff",
         fontWeight: "bold",
+    },
+    editButton: {
+        backgroundColor: "#0de136",
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 10,
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+    modalContent: {
+        backgroundColor: "#fff",
+        padding: 20,
+        borderRadius: 10,
+        width: "80%",
+    },
+    input: {
+        width: "100%",
+        padding: 10,
+        marginVertical: 5,
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 5,
     },
 });
