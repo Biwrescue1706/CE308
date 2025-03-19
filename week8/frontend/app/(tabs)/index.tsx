@@ -134,8 +134,8 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     bookContainer: {
-        marginBottom: 10,
-        padding: 10,
+        marginBottom: 20,
+        padding: 20,
         borderWidth: 1,
         borderRadius: 5,
         width: "90%",
