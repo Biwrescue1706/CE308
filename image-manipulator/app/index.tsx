@@ -1,4 +1,3 @@
-import React from "react";  // ✅ เพิ่ม import นี้
 import { Text, View } from "react-native";
 import ImageEdit from "./ImageEdit";
 
