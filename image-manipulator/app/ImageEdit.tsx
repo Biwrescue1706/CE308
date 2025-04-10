@@ -37,7 +37,6 @@ export default function ImageEdit() {
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
-      // reset filters
       setBrightness(1);
       setContrast(1);
       setSaturation(1);
@@ -61,10 +60,7 @@ export default function ImageEdit() {
       imageUri,
       [
         {
-          // Apply color controls
-          // Expo doesn't directly support brightness/contrast, so we simulate via additional libs or preset filters.
-          // In real case, you'd use gl-image-filters or WebGL.
-          // Here we simulate with resize to fake apply (just reprocess).
+          // Simulate processing
           resize: { width: 300 },
         },
       ],
@@ -87,6 +83,13 @@ export default function ImageEdit() {
     }
   };
 
+  const renderValueText = (label: string, value: number, emojiUp: string, emojiDown: string) => {
+    const diff = value - 1;
+    const sign = diff > 0 ? '+' : diff < 0 ? '-' : '';
+    const emoji = diff > 0 ? emojiUp : diff < 0 ? emojiDown : '';
+    return `${label}: ${sign}${Math.abs(diff).toFixed(1)} ${emoji}`;
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
@@ -106,7 +109,9 @@ export default function ImageEdit() {
 
       {imageUri && (
         <>
-          <Text style={styles.label}>ความสว่าง: {brightness.toFixed(1)}</Text>
+          <Text style={styles.label}>
+            {renderValueText('ความสว่าง', brightness, '🔆', '🌒')}
+          </Text>
           <Slider
             minimumValue={0}
             maximumValue={2}
@@ -116,7 +121,9 @@ export default function ImageEdit() {
             style={styles.slider}
           />
 
-          <Text style={styles.label}>ความคมชัด: {contrast.toFixed(1)}</Text>
+          <Text style={styles.label}>
+            {renderValueText('ความคมชัด', contrast, '✴️', '🌫️')}
+          </Text>
           <Slider
             minimumValue={0}
             maximumValue={2}
@@ -126,7 +133,9 @@ export default function ImageEdit() {
             style={styles.slider}
           />
 
-          <Text style={styles.label}>ความอิ่มสี: {saturation.toFixed(1)}</Text>
+          <Text style={styles.label}>
+            {renderValueText('ความอิ่มสี', saturation, '🌈', '🎨')}
+          </Text>
           <Slider
             minimumValue={0}
             maximumValue={2}
