@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Image,
-  Button,
-  StyleSheet,
-  Alert,
-  ScrollView,
-  Text,
-} from 'react-native';
+import {View,Image,Button,StyleSheet,Alert,ScrollView,Text,} from 'react-native';
 import Slider from '@react-native-community/slider';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
