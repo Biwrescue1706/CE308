@@ -1,20 +1,29 @@
-import React, { useState, useEffect } from "react";
-import {View,Image,Button,StyleSheet,Alert,ImageStyle,ViewStyle,} from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
-import * as MediaLibrary from "expo-media-library";
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Image,
+  Button,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  Text,
+} from 'react-native';
+import Slider from '@react-native-community/slider';
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
+import * as ImageManipulator from 'expo-image-manipulator';
 
-// ========== Main Component ==========
-
-export default function ImageEditor(): JSX.Element {
-  const [image, setImage] = useState<string | null>(null);
-  const [rotation, setRotation] = useState<number>(0);
-  const [hasMediaPermission, setHasMediaPermission] = useState<boolean | null>(null);
+export default function ImageEdit() {
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [hasPermission, setHasPermission] = useState<boolean>(false);
+  const [brightness, setBrightness] = useState<number>(1);
+  const [contrast, setContrast] = useState<number>(1);
+  const [saturation, setSaturation] = useState<number>(1);
 
   useEffect(() => {
     (async () => {
-      const granted = await requestMediaPermission();
-      setHasMediaPermission(granted);
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      setHasPermission(status === 'granted');
     })();
   }, []);
 
@@ -27,168 +36,147 @@ export default function ImageEditor(): JSX.Element {
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      setRotation(0);
+      setImageUri(result.assets[0].uri);
+      // reset filters
+      setBrightness(1);
+      setContrast(1);
+      setSaturation(1);
     }
   };
 
-  const handleRotate = async (direction: "left" | "right") => {
-    if (!image) return;
-    const newUri = await rotateImage(image, direction);
-    setImage(newUri);
-    const degree = direction === "left" ? -90 : 90;
-    setRotation((rotation + degree + 360) % 360);
+  const rotate = async (direction: 'left' | 'right') => {
+    if (!imageUri) return;
+    const degrees = direction === 'left' ? -90 : 90;
+    const result = await ImageManipulator.manipulateAsync(
+      imageUri,
+      [{ rotate: degrees }],
+      { compress: 1, format: ImageManipulator.SaveFormat.PNG }
+    );
+    setImageUri(result.uri);
   };
 
-  const handleFilter = async () => {
-    if (!image) return;
-    const filteredUri = await applyFilter(image);
-    setImage(filteredUri);
+  const applyFilters = async () => {
+    if (!imageUri) return;
+    const result = await ImageManipulator.manipulateAsync(
+      imageUri,
+      [
+        {
+          // Apply color controls
+          // Expo doesn't directly support brightness/contrast, so we simulate via additional libs or preset filters.
+          // In real case, you'd use gl-image-filters or WebGL.
+          // Here we simulate with resize to fake apply (just reprocess).
+          resize: { width: 300 },
+        },
+      ],
+      { compress: 1, format: ImageManipulator.SaveFormat.PNG }
+    );
+    setImageUri(result.uri);
   };
 
-  const handleSave = async () => {
-    if (image && hasMediaPermission !== null) {
-      await saveImage(image, hasMediaPermission);
+  const saveImage = async () => {
+    if (!imageUri || !hasPermission) {
+      Alert.alert('ไม่สามารถบันทึก', 'ยังไม่ได้อนุญาตให้เข้าถึงคลังภาพ');
+      return;
+    }
+
+    try {
+      await MediaLibrary.saveToLibraryAsync(imageUri);
+      Alert.alert('✅ สำเร็จ', 'บันทึกรูปภาพเรียบร้อยแล้ว');
+    } catch (error) {
+      Alert.alert('ผิดพลาด', 'ไม่สามารถบันทึกรูปภาพได้');
     }
   };
 
   return (
-    <View style={styles.container}>
-      {image && <Image source={{ uri: image }} style={styles.image} />}
+    <ScrollView contentContainerStyle={styles.container}>
+      {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
 
-      <View style={styles.buttonSpacing}>
+      <View style={styles.spacing}>
         <Button title="เลือกรูปภาพ" onPress={pickImage} />
       </View>
 
-      <View style={[styles.row, styles.buttonSpacing]}>
-        <View style={styles.buttonInRow}>
-          <Button title="หมุนซ้าย 90°"onPress={() => handleRotate("left")}disabled={!image}
+      <View style={[styles.row, styles.spacing]}>
+        <View style={styles.buttonHalf}>
+          <Button title="หมุนซ้าย" onPress={() => rotate('left')} disabled={!imageUri} />
+        </View>
+        <View style={styles.buttonHalf}>
+          <Button title="หมุนขวา" onPress={() => rotate('right')} disabled={!imageUri} />
+        </View>
+      </View>
+
+      {imageUri && (
+        <>
+          <Text style={styles.label}>ความสว่าง: {brightness.toFixed(1)}</Text>
+          <Slider
+            minimumValue={0}
+            maximumValue={2}
+            step={0.1}
+            value={brightness}
+            onValueChange={setBrightness}
+            style={styles.slider}
           />
-        </View>
-        <View style={styles.buttonInRow}>
-          <Button title="หมุนขวา 90°"onPress={() => handleRotate("right")}disabled={!image}/>
-        </View>
-      </View>
 
-      <View style={styles.buttonSpacing}>
-        <Button title="ใส่ฟิลเตอร์"onPress={handleFilter}disabled={!image}/>
-      </View>
+          <Text style={styles.label}>ความคมชัด: {contrast.toFixed(1)}</Text>
+          <Slider
+            minimumValue={0}
+            maximumValue={2}
+            step={0.1}
+            value={contrast}
+            onValueChange={setContrast}
+            style={styles.slider}
+          />
 
-      <View style={styles.buttonSpacing}>
-        <Button title="บันทึกรูปภาพ" onPress={handleSave} disabled={!image}/>
+          <Text style={styles.label}>ความอิ่มสี: {saturation.toFixed(1)}</Text>
+          <Slider
+            minimumValue={0}
+            maximumValue={2}
+            step={0.1}
+            value={saturation}
+            onValueChange={setSaturation}
+            style={styles.slider}
+          />
+
+          <View style={styles.spacing}>
+            <Button title="ใช้ฟิลเตอร์ (จำลอง)" onPress={applyFilters} />
+          </View>
+        </>
+      )}
+
+      <View style={styles.spacing}>
+        <Button title="บันทึกรูปภาพ" onPress={saveImage} disabled={!imageUri} />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
-// ========== Utility Functions ==========
-
-const rotateImage = async (uri: string, direction: "left" | "right" = "right"): Promise<string> => {
-  const rotateDegree = direction === "left" ? -90 : 90;
-
-  try {
-    const result = await ImageManipulator.manipulateAsync(
-      uri,
-      [
-        { rotate: rotateDegree },
-        { resize: { width: 300 } },
-      ],
-      { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
-    );
-
-    return result.uri;
-  } catch (error) {
-    console.error("Error rotating image:", error);
-    Alert.alert("เกิดข้อผิดพลาด", "ไม่สามารถหมุนรูปภาพได้");
-    return uri;
-  }
-};
-
-const applyFilter = async (uri: string): Promise<string> => {
-  try {
-    const result = await ImageManipulator.manipulateAsync(
-      uri,
-      [
-        // ตัวอย่างฟิลเตอร์: ไม่มีจริง แค่ resize (คุณสามารถเพิ่ม grayscale, brightness ฯลฯ ได้ภายหลัง)
-        { resize: { width: 300 } },
-      ],
-      { format: ImageManipulator.SaveFormat.JPEG }
-    );
-
-    return result.uri;
-  } catch (error) {
-    console.error("Error applying filter:", error);
-    Alert.alert("ผิดพลาด", "ไม่สามารถใส่ฟิลเตอร์ได้");
-    return uri;
-  }
-};
-
-const saveImage = async (uri: string, hasPermission: boolean): Promise<void> => {
-  if (!uri) {
-    Alert.alert("ไม่สามารถบันทึกได้", "ไม่พบรูปภาพ");
-    return;
-  }
-
-  if (!hasPermission) {
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("ไม่สามารถบันทึกได้", "ต้องขอสิทธิ์เข้าถึงคลังภาพก่อน");
-      return;
-    }
-  }
-
-  try {
-    await MediaLibrary.saveToLibraryAsync(uri);
-    Alert.alert("สำเร็จ", "บันทึกรูปภาพเรียบร้อยแล้ว!");
-  } catch (error) {
-    console.error("Error saving image:", error);
-    Alert.alert("ผิดพลาด", "ไม่สามารถบันทึกภาพได้");
-  }
-};
-
-const requestMediaPermission = async (): Promise<boolean> => {
-  try {
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    return status === "granted";
-  } catch (error) {
-    console.error("Error requesting media library permission:", error);
-    return false;
-  }
-};
-
-// ========== Styles ==========
-
-type Styles = {
-  container: ViewStyle;
-  image: ImageStyle;
-  buttonSpacing: ViewStyle;
-  row: ViewStyle;
-  buttonInRow: ViewStyle;
-};
-
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    alignItems: 'center',
     padding: 20,
   },
   image: {
     width: 300,
     height: 300,
+    resizeMode: 'contain',
     marginBottom: 20,
-    resizeMode: "contain",
   },
-  buttonSpacing: {
-    marginBottom: 10,
+  spacing: {
+    marginVertical: 10,
     width: 250,
   },
   row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  buttonInRow: {
+  buttonHalf: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  slider: {
+    width: 250,
+  },
+  label: {
+    marginTop: 10,
+    fontSize: 14,
   },
 });
